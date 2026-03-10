@@ -60,9 +60,11 @@ export function ArticleSection() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        {blogPosts.map((post, index) => (
-          <ArticleCard key={index} {...post} />
-        ))}
+      {blogPosts
+        .filter((post) => selectedCategory === "Highlight" || post.category === selectedCategory)
+        .map((post, index) => (
+    <ArticleCard key={index} {...post} />
+  ))}
       </div>
     </section>
   );
