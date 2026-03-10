@@ -3,7 +3,7 @@ import { ArticleSection } from "./components/ArticleSection";
 
 function App() {
   return (
-    <div>
+    <div className="px-[120px] pt-[60px] pb-[120px] flex flex-col gap-[80px]">
       <NavBar />
       <HeroSection />
       <ArticleSection />
