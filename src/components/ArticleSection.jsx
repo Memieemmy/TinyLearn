@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Search } from "lucide-react";
 import { ArticleCard } from "./ArticleCard";
 import blogPosts from "../data/blogPosts";
@@ -12,6 +13,8 @@ import {
 const tabs = ["Highlight", "Cat", "Inspiration", "General"];
 
 export function ArticleSection() {
+  const [selectedCategory, setSelectedCategory] = useState("Highlight");
+
   return (
     <section className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Latest articles</h2>
@@ -20,7 +23,16 @@ export function ArticleSection() {
       <div className="hidden md:flex items-center justify-between border border-gray-200 rounded-2xl px-4 py-2">
         <div className="flex gap-2">
           {tabs.map((tab) => (
-            <button key={tab} className="px-4 py-2 rounded-full border border-gray-300 text-sm hover:bg-gray-100">
+            <button
+              key={tab}
+              disabled={selectedCategory === tab}
+              onClick={() => setSelectedCategory(tab)}
+              className={`px-4 py-2 rounded-full border text-sm transition-colors
+                ${selectedCategory === tab
+                  ? "bg-gray-800 text-white border-gray-800 cursor-not-allowed"
+                  : "border-gray-300 hover:bg-gray-100"
+                }`}
+            >
               {tab}
             </button>
           ))}
@@ -33,7 +45,7 @@ export function ArticleSection() {
 
       {/* Mobile */}
       <div className="flex md:hidden">
-        <Select>
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
