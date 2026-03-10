@@ -1,4 +1,10 @@
 export function ArticleCard({ image, category, title, description, author, date }) {
+    const formattedDate = new Date(date).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  
     return (
       <div className="rounded-2xl overflow-hidden">
         <img src={image} alt={title} className="w-full h-48 object-cover rounded-2xl" />
@@ -10,7 +16,7 @@ export function ArticleCard({ image, category, title, description, author, date 
             <img src="https://placehold.co/24x24" alt={author} className="rounded-full w-6 h-6" />
             <span className="text-sm text-gray-500">{author}</span>
             <span className="text-gray-300">|</span>
-            <span className="text-sm text-gray-400">{date}</span>
+            <span className="text-sm text-gray-400">{formattedDate}</span>
           </div>
         </div>
       </div>

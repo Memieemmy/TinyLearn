@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { ArticleCard } from "./ArticleCard";
-import blogPosts from "../data/blogPosts";
+import axios from "axios";
 import {
   Select,
   SelectContent,
@@ -14,6 +14,27 @@ const tabs = ["Highlight", "Cat", "Inspiration", "General"];
 
 export function ArticleSection() {
   const [selectedCategory, setSelectedCategory] = useState("Highlight");
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPosts = async (category) => {
+    setLoading(true);
+    try {
+      const params = {};
+      if (category !== "Highlight") {
+        params.category = category;
+      }
+      const res = await axios.get("https://blog-post-project-api.vercel.app/posts", { params });
+      setPosts(res.data.posts);
+    } catch (error) {
+      console.error(error);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchPosts(selectedCategory);
+  }, [selectedCategory]);
 
   return (
     <section className="mt-8">
@@ -59,13 +80,15 @@ export function ArticleSection() {
         </Select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-      {blogPosts
-        .filter((post) => selectedCategory === "Highlight" || post.category === selectedCategory)
-        .map((post, index) => (
-    <ArticleCard key={index} {...post} />
-  ))}
-      </div>
+      {loading ? (
+        <p className="text-center mt-8 text-gray-400">Loading...</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          {posts.map((post, index) => (
+            <ArticleCard key={index} {...post} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
