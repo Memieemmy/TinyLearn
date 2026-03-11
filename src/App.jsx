@@ -1,14 +1,17 @@
 import { NavBar, HeroSection, Footer } from "./components/components";
 import { ArticleSection } from "./components/ArticleSection";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import ViewPostPage from "./pages/ViewPostPage";
 
 function App() {
   return (
-    <div className="px-[120px] pt-[60px] pb-[120px] flex flex-col gap-[80px]">
-      <NavBar />
-      <HeroSection />
-      <ArticleSection />
-      <Footer />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/post/:id" element={<ViewPostPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

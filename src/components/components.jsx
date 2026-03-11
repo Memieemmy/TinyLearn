@@ -2,7 +2,7 @@ import { Linkedin, Github, Chrome } from "lucide-react";
 
 export function NavBar() {
   return (
-    <nav className="flex items-center justify-between px-8 py-4 bg-[#f5f5f0] rounded-full mx-4 mt-4">
+    <nav className="flex items-center justify-between px-[120px] py-4 border-b border-gray-200">
       <h1 className="text-xl font-bold">hh.</h1>
       <div className="flex gap-3">
         <button className="px-4 py-2 border border-gray-400 rounded-full">Log in</button>
@@ -14,7 +14,7 @@ export function NavBar() {
 
 export function HeroSection() {
   return (
-    <section className="flex items-center justify-center gap-8 mx-4 mt-4 p-12 bg-[#f5f5f0] rounded-3xl">
+    <section className="flex items-center justify-center gap-8 p-12 bg-[#f5f5f0] rounded-3xl">
       <div className="text-right">
         <h2 className="text-4xl font-bold">Stay Informed, Stay Inspired</h2>
         <p className="text-gray-500 mt-4">Discover a World of Knowledge at Your Fingertips.</p>
@@ -32,7 +32,7 @@ export function HeroSection() {
 
 export function Footer() {
   return (
-    <footer className="flex items-center justify-between px-8 py-4 mx-4 mt-4 bg-[#f5f5f0] rounded-3xl">
+    <footer className="flex items-center justify-between px-[120px] py-4 bg-[#f5f5f0] rounded-3xl">
       <div className="flex items-center gap-3">
         <span className="text-sm text-gray-500">Get in touch</span>
         <div className="flex gap-2">
