@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { ArticleCard } from "./ArticleCard";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -16,14 +17,15 @@ export function ArticleSection() {
   const [selectedCategory, setSelectedCategory] = useState("Highlight");
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [keyword, setKeyword] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const navigate = useNavigate();
 
   const fetchPosts = async (category) => {
     setLoading(true);
     try {
       const params = {};
-      if (category !== "Highlight") {
-        params.category = category;
-      }
+      if (category !== "Highlight") params.category = category;
       const res = await axios.get("https://blog-post-project-api.vercel.app/posts", { params });
       setPosts(res.data.posts);
     } catch (error) {
@@ -32,9 +34,28 @@ export function ArticleSection() {
     setLoading(false);
   };
 
+  const fetchSearch = async (kw) => {
+    if (!kw) return setSearchResults([]);
+    try {
+      const res = await axios.get("https://blog-post-project-api.vercel.app/posts", {
+        params: { keyword: kw },
+      });
+      setSearchResults(res.data.posts);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     fetchPosts(selectedCategory);
   }, [selectedCategory]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchSearch(keyword);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [keyword]);
 
   return (
     <section className="mt-8">
@@ -58,9 +79,28 @@ export function ArticleSection() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2">
-          <input type="text" placeholder="Search" className="outline-none text-sm bg-transparent" />
+        <div className="relative flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2">
+          <input
+            type="text"
+            placeholder="Search"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            className="outline-none text-sm bg-transparent"
+          />
           <Search size={16} className="text-gray-400" />
+          {searchResults.length > 0 && keyword && (
+            <div className="absolute top-12 right-0 bg-white border border-gray-200 rounded-2xl shadow-lg w-80 z-10">
+              {searchResults.map((post) => (
+                <div
+                  key={post.id}
+                  onClick={() => { navigate(`/post/${post.id}`); setKeyword(""); }}
+                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0 rounded-2xl"
+                >
+                  <p className="text-sm font-medium">{post.title}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
