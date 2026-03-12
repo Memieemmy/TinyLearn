@@ -1,12 +1,13 @@
 import { Linkedin, Github, Chrome } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function NavBar() {
   return (
     <nav className="flex items-center justify-between px-[120px] py-4 border-b border-gray-200">
-      <h1 className="text-xl font-bold">hh.</h1>
+      <Link to="/" className="text-xl font-bold">hh.</Link>
       <div className="flex gap-3">
-        <button className="px-4 py-2 border border-gray-400 rounded-full">Log in</button>
-        <button className="px-4 py-2 bg-black text-white rounded-full">Sign up</button>
+        <Link to="/login" className="px-4 py-2 border border-gray-400 rounded-full text-sm hover:bg-gray-50 transition">Log in</Link>
+        <Link to="/signup" className="px-4 py-2 bg-black text-white rounded-full text-sm hover:bg-gray-800 transition">Sign up</Link>
       </div>
     </nav>
   );
