@@ -1,7 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 function ViewPostPage() {
@@ -15,12 +15,12 @@ function ViewPostPage() {
 
   useEffect(() => {
     const fetchPost = async () => {
-      try {
-        const res = await axios.get(`https://blog-post-project-api.vercel.app/posts/${id}`);
-        setPost(res.data);
-      } catch (error) {
-        console.error(error);
-      }
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (!error) setPost(data);
       setLoading(false);
     };
     fetchPost();
@@ -65,7 +65,7 @@ function ViewPostPage() {
         <h1 className="text-4xl font-bold mt-4">{post.title}</h1>
         <p className="text-gray-500 mt-2">{post.description}</p>
         <p className="text-gray-400 mt-2">
-          {post.author} | {new Date(post.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+          {post.author} | {new Date(post.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
         </p>
         <div className="mt-8 prose max-w-none">
         <ReactMarkdown>{post.content}</ReactMarkdown>

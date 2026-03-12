@@ -2,24 +2,24 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-const ADMIN_EMAIL = "admin@tinylearn.com";
-const ADMIN_PASSWORD = "admin1234";
-
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      login({ email, name: "Admin" });
-      navigate("/admin/dashboard");
-    } else {
+    setLoading(true);
+    const { error: err } = await login(email, password);
+    if (err) {
       setError(true);
+    } else {
+      navigate("/admin/dashboard");
     }
+    setLoading(false);
   };
 
   return (
@@ -54,9 +54,10 @@ function LoginPage() {
             </div>
             <button
               type="submit"
-              className="w-full bg-gray-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-black transition mt-1"
+              disabled={loading}
+              className="w-full bg-gray-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-black transition mt-1 disabled:opacity-60"
             >
-              Log in
+              {loading ? "Logging in..." : "Log in"}
             </button>
           </form>
 

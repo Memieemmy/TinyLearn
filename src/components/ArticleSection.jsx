@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { ArticleCard } from "./ArticleCard";
-import axios from "axios";
+import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import {
   Select,
@@ -23,27 +23,21 @@ export function ArticleSection() {
 
   const fetchPosts = async (category) => {
     setLoading(true);
-    try {
-      const params = {};
-      if (category !== "Highlight") params.category = category;
-      const res = await axios.get("https://blog-post-project-api.vercel.app/posts", { params });
-      setPosts(res.data.posts);
-    } catch (error) {
-      console.error(error);
-    }
+    let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
+    if (category !== "Highlight") query = query.eq("category", category);
+    const { data, error } = await query;
+    if (!error) setPosts(data);
     setLoading(false);
   };
 
   const fetchSearch = async (kw) => {
     if (!kw) return setSearchResults([]);
-    try {
-      const res = await axios.get("https://blog-post-project-api.vercel.app/posts", {
-        params: { keyword: kw },
-      });
-      setSearchResults(res.data.posts);
-    } catch (error) {
-      console.error(error);
-    }
+    const { data } = await supabase
+      .from("posts")
+      .select("id, title")
+      .ilike("title", `%${kw}%`)
+      .limit(5);
+    setSearchResults(data || []);
   };
 
   useEffect(() => {

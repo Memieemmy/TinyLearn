@@ -1,19 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, UserPlus, X } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import AdminLayout from "./AdminLayout";
-
-const INITIAL_MEMBERS = [
-  { id: 1, name: "Sarah Johnson", email: "sarah.j@email.com", role: "Editor", joined: "2024-01-15", status: "Active" },
-  { id: 2, name: "James Wilson", email: "j.wilson@email.com", role: "Writer", joined: "2024-02-20", status: "Active" },
-  { id: 3, name: "Emily Chen", email: "emily.c@email.com", role: "Viewer", joined: "2024-03-05", status: "Active" },
-  { id: 4, name: "Robert Davis", email: "r.davis@email.com", role: "Writer", joined: "2024-03-12", status: "Inactive" },
-  { id: 5, name: "Olivia Martinez", email: "o.m@email.com", role: "Editor", joined: "2024-04-01", status: "Active" },
-  { id: 6, name: "William Brown", email: "w.brown@email.com", role: "Viewer", joined: "2024-04-18", status: "Active" },
-  { id: 7, name: "Sophia Taylor", email: "s.taylor@email.com", role: "Writer", joined: "2024-05-07", status: "Pending" },
-  { id: 8, name: "Noah Anderson", email: "n.anderson@email.com", role: "Viewer", joined: "2024-05-22", status: "Active" },
-  { id: 9, name: "Ava Thomas", email: "ava.t@email.com", role: "Writer", joined: "2024-06-03", status: "Active" },
-  { id: 10, name: "Liam Jackson", email: "l.jackson@email.com", role: "Viewer", joined: "2024-06-15", status: "Inactive" },
-];
 
 const statusStyle = {
   Active: "bg-green-100 text-green-600",
@@ -33,11 +21,21 @@ function getInitials(name) {
 
 function AddMemberModal({ onClose, onAdd }) {
   const [form, setForm] = useState({ name: "", email: "", role: "Viewer", status: "Active" });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onAdd({ ...form, id: Date.now(), joined: new Date().toISOString().slice(0, 10) });
-    onClose();
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("members")
+      .insert([form])
+      .select()
+      .single();
+    setLoading(false);
+    if (!error) {
+      onAdd(data);
+      onClose();
+    }
   };
 
   return (
@@ -89,9 +87,10 @@ function AddMemberModal({ onClose, onAdd }) {
             </div>
             <button
               type="submit"
-              className="w-full bg-gray-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-black transition mt-1"
+              disabled={loading}
+              className="w-full bg-gray-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-black transition mt-1 disabled:opacity-60"
             >
-              Add Member
+              {loading ? "Adding..." : "Add Member"}
             </button>
           </form>
         </div>
@@ -101,11 +100,21 @@ function AddMemberModal({ onClose, onAdd }) {
 }
 
 function AdminMembersPage() {
-  const [members, setMembers] = useState(INITIAL_MEMBERS);
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      const { data } = await supabase.from("members").select("*").order("joined", { ascending: false });
+      setMembers(data || []);
+      setLoading(false);
+    };
+    fetchMembers();
+  }, []);
 
   const filtered = members.filter((m) => {
     const matchSearch =
@@ -116,16 +125,17 @@ function AdminMembersPage() {
     return matchSearch && matchRole && matchStatus;
   });
 
-  const handleRemove = (id) => setMembers(members.filter((m) => m.id !== id));
+  const handleRemove = async (id) => {
+    await supabase.from("members").delete().eq("id", id);
+    setMembers(members.filter((m) => m.id !== id));
+  };
 
   const handleAdd = (member) => setMembers([member, ...members]);
 
-  const handleToggleStatus = (id) => {
-    setMembers(members.map((m) =>
-      m.id === id
-        ? { ...m, status: m.status === "Active" ? "Inactive" : "Active" }
-        : m
-    ));
+  const handleToggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+    await supabase.from("members").update({ status: newStatus }).eq("id", id);
+    setMembers(members.map((m) => m.id === id ? { ...m, status: newStatus } : m));
   };
 
   return (
@@ -195,59 +205,62 @@ function AdminMembersPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((member) => (
-                <tr key={member.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
-                  <td className="px-6 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600 flex-shrink-0">
-                        {getInitials(member.name)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{member.name}</p>
-                        <p className="text-xs text-gray-400">{member.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-3.5">
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${roleStyle[member.role]}`}>
-                      {member.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3.5">
-                    <p className="text-sm text-gray-500">
-                      {new Date(member.joined).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </td>
-                  <td className="px-6 py-3.5">
-                    <button
-                      onClick={() => handleToggleStatus(member.id)}
-                      className={`text-xs px-2.5 py-1 rounded-full font-medium transition ${statusStyle[member.status]}`}
-                    >
-                      {member.status}
-                    </button>
-                  </td>
-                  <td className="px-6 py-3.5">
-                    <div className="flex items-center justify-end">
-                      <button
-                        onClick={() => handleRemove(member.id)}
-                        className="text-xs text-red-400 hover:text-red-600 px-2.5 py-1 rounded-lg hover:bg-red-50 transition"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
+              {loading ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-14 text-center text-gray-400 text-sm">
-                    No members found
-                  </td>
+                  <td colSpan="5" className="px-6 py-14 text-center text-gray-400 text-sm">Loading...</td>
                 </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-14 text-center text-gray-400 text-sm">No members found</td>
+                </tr>
+              ) : (
+                filtered.map((member) => (
+                  <tr key={member.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
+                    <td className="px-6 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600 flex-shrink-0">
+                          {getInitials(member.name)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{member.name}</p>
+                          <p className="text-xs text-gray-400">{member.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3.5">
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${roleStyle[member.role]}`}>
+                        {member.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3.5">
+                      <p className="text-sm text-gray-500">
+                        {new Date(member.joined).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </td>
+                    <td className="px-6 py-3.5">
+                      <button
+                        onClick={() => handleToggleStatus(member.id, member.status)}
+                        className={`text-xs px-2.5 py-1 rounded-full font-medium transition ${statusStyle[member.status]}`}
+                      >
+                        {member.status}
+                      </button>
+                    </td>
+                    <td className="px-6 py-3.5">
+                      <div className="flex items-center justify-end">
+                        <button
+                          onClick={() => handleRemove(member.id)}
+                          className="text-xs text-red-400 hover:text-red-600 px-2.5 py-1 rounded-lg hover:bg-red-50 transition"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
