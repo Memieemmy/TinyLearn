@@ -3,9 +3,9 @@ import { ArticleSection } from "../components/ArticleSection";
 
 function HomePage() {
   return (
-    <div>
+    <div className="min-h-screen bg-[#EDE9F6]">
       <NavBar />
-      <div className="px-[120px] pt-[60px] pb-[120px] flex flex-col gap-[80px]">
+      <div className="px-6 md:px-[80px] pt-8 pb-16 flex flex-col gap-6">
         <HeroSection />
         <ArticleSection />
         <Footer />

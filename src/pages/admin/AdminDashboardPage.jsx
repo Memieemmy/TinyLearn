@@ -5,10 +5,10 @@ import { FileText, Users, Eye, TrendingUp } from "lucide-react";
 import AdminLayout from "./AdminLayout";
 
 const stats = [
-  { label: "Total Posts", value: "120+", icon: FileText, bg: "bg-amber-50", color: "text-amber-600" },
-  { label: "Total Members", value: "128", icon: Users, bg: "bg-blue-50", color: "text-blue-600" },
-  { label: "Views This Month", value: "8.4k", icon: Eye, bg: "bg-green-50", color: "text-green-600" },
-  { label: "Growth", value: "+12%", icon: TrendingUp, bg: "bg-purple-50", color: "text-purple-600" },
+  { label: "Total Posts", value: "120+", icon: FileText, bg: "bg-violet-100", color: "text-violet-600" },
+  { label: "Total Members", value: "128", icon: Users, bg: "bg-blue-100", color: "text-blue-600" },
+  { label: "Views This Month", value: "8.4k", icon: Eye, bg: "bg-green-100", color: "text-green-600" },
+  { label: "Growth", value: "+12%", icon: TrendingUp, bg: "bg-orange-100", color: "text-orange-600" },
 ];
 
 function AdminDashboardPage() {
@@ -49,14 +49,16 @@ function AdminDashboardPage() {
         <div className="bg-white rounded-2xl shadow-sm">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h3 className="font-semibold text-gray-900">Recent Posts</h3>
-            <Link to="/admin/posts" className="text-sm text-gray-400 hover:text-gray-900 transition">
+            <Link to="/admin/posts" className="text-sm text-[#7C5CBF] hover:text-[#5A3E99] transition">
               View all →
             </Link>
           </div>
 
           <div className="divide-y divide-gray-50">
             {loading ? (
-              <p className="text-center py-10 text-gray-400 text-sm">Loading...</p>
+              <div className="flex items-center justify-center py-10">
+                <div className="w-6 h-6 border-4 border-[#7C5CBF] border-t-transparent rounded-full animate-spin" />
+              </div>
             ) : (
               posts.map((post) => (
                 <div key={post.id} className="flex items-center justify-between px-6 py-3.5 hover:bg-gray-50/50">
@@ -64,7 +66,7 @@ function AdminDashboardPage() {
                     <img
                       src={post.image || "https://placehold.co/40x40"}
                       alt={post.title}
-                      className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                      className="w-10 h-10 rounded-xl object-cover flex-shrink-0"
                     />
                     <div>
                       <p className="text-sm font-medium text-gray-900 line-clamp-1 max-w-[400px]">{post.title}</p>
@@ -91,7 +93,7 @@ function AdminDashboardPage() {
             to="/admin/members"
             className="bg-white rounded-2xl p-5 shadow-sm flex items-center gap-4 hover:shadow-md transition group"
           >
-            <div className="p-3 bg-blue-50 rounded-xl text-blue-600 group-hover:bg-blue-100 transition">
+            <div className="p-3 bg-blue-100 rounded-xl text-blue-600 group-hover:bg-blue-200 transition">
               <Users size={20} />
             </div>
             <div>
@@ -103,7 +105,7 @@ function AdminDashboardPage() {
             to="/admin/posts"
             className="bg-white rounded-2xl p-5 shadow-sm flex items-center gap-4 hover:shadow-md transition group"
           >
-            <div className="p-3 bg-amber-50 rounded-xl text-amber-600 group-hover:bg-amber-100 transition">
+            <div className="p-3 bg-violet-100 rounded-xl text-violet-600 group-hover:bg-violet-200 transition">
               <FileText size={20} />
             </div>
             <div>

@@ -11,7 +11,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const tabs = ["Highlight", "Cat", "Inspiration", "General"];
+const tabs = ["Highlight", "Dev", "Ba", "IBIS", "Productive"];
+
+const tabActiveColors = {
+  Highlight: "bg-[#7C5CBF] text-white border-[#7C5CBF]",
+  Dev: "bg-blue-500 text-white border-blue-500",
+  Ba: "bg-orange-500 text-white border-orange-500",
+  IBIS: "bg-violet-500 text-white border-violet-500",
+  Productive: "bg-green-500 text-white border-green-500",
+};
 
 export function ArticleSection() {
   const [selectedCategory, setSelectedCategory] = useState("Highlight");
@@ -26,7 +34,7 @@ export function ArticleSection() {
     let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
     if (category !== "Highlight") query = query.eq("category", category);
     const { data, error } = await query;
-    if (!error) setPosts(data);
+    if (!error) setPosts(data || []);
     setLoading(false);
   };
 
@@ -45,50 +53,33 @@ export function ArticleSection() {
   }, [selectedCategory]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchSearch(keyword);
-    }, 500);
+    const timer = setTimeout(() => fetchSearch(keyword), 500);
     return () => clearTimeout(timer);
   }, [keyword]);
 
   return (
-    <section className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Latest articles</h2>
+    <section className="mt-2">
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-2xl font-bold text-gray-800">Latest articles</h2>
 
-      {/* Desktop */}
-      <div className="hidden md:flex items-center justify-between border border-gray-200 rounded-2xl px-4 py-2">
-        <div className="flex gap-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              disabled={selectedCategory === tab}
-              onClick={() => setSelectedCategory(tab)}
-              className={`px-4 py-2 rounded-full border text-sm transition-colors
-                ${selectedCategory === tab
-                  ? "bg-gray-800 text-white border-gray-800 cursor-not-allowed"
-                  : "border-gray-300 hover:bg-gray-100"
-                }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-        <div className="relative flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2">
+        {/* Search - Desktop */}
+        <div className="hidden md:flex relative items-center gap-2 bg-white border border-gray-100 rounded-2xl px-4 py-2 shadow-sm w-64">
+          <Search size={15} className="text-gray-400 flex-shrink-0" />
           <input
             type="text"
-            placeholder="Search"
+            placeholder="Search articles..."
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            className="outline-none text-sm bg-transparent"
+            className="outline-none text-sm bg-transparent flex-1 min-w-0"
           />
-          <Search size={16} className="text-gray-400" />
           {searchResults.length > 0 && keyword && (
-            <div className="absolute top-12 right-0 bg-white border border-gray-200 rounded-2xl shadow-lg w-80 z-10">
+            <div className="absolute top-12 right-0 bg-white border border-gray-100 rounded-2xl shadow-xl w-80 z-10 overflow-hidden">
               {searchResults.map((post) => (
                 <div
                   key={post.id}
                   onClick={() => { navigate(`/post/${post.id}`); setKeyword(""); }}
-                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0 rounded-2xl"
+                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-b-0"
                 >
                   <p className="text-sm font-medium">{post.title}</p>
                 </div>
@@ -98,30 +89,60 @@ export function ArticleSection() {
         </div>
       </div>
 
-      {/* Mobile */}
-      <div className="flex md:hidden">
+      {/* Category tabs - Desktop */}
+      <div className="hidden md:flex gap-2 mb-6">
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setSelectedCategory(tab)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 border ${
+              selectedCategory === tab
+                ? tabActiveColors[tab]
+                : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Category select - Mobile */}
+      <div className="flex md:hidden mb-4">
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full bg-white rounded-xl">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
             {tabs.map((tab) => (
-              <SelectItem key={tab} value={tab}>
-                {tab}
-              </SelectItem>
+              <SelectItem key={tab} value={tab}>{tab}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
+      {/* Posts - Bento Grid */}
       {loading ? (
-        <p className="text-center mt-8 text-gray-400">Loading...</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          {posts.map((post, index) => (
-            <ArticleCard key={index} {...post} />
+        <div className="flex items-center justify-center h-52">
+          <div className="w-8 h-8 border-4 border-[#7C5CBF] border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : posts.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-fr">
+          {posts[0] && (
+            <div className="md:col-span-2">
+              <ArticleCard {...posts[0]} date={posts[0].created_at} featured />
+            </div>
+          )}
+          {posts[1] && (
+            <div>
+              <ArticleCard {...posts[1]} date={posts[1].created_at} />
+            </div>
+          )}
+          {posts.slice(2).map((post) => (
+            <ArticleCard key={post.id} {...post} date={post.created_at} />
           ))}
         </div>
+      ) : (
+        <p className="text-center mt-8 text-gray-400">No articles found.</p>
       )}
     </section>
   );

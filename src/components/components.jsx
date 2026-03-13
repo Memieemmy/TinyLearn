@@ -3,11 +3,21 @@ import { Link } from "react-router-dom";
 
 export function NavBar() {
   return (
-    <nav className="flex items-center justify-between px-[120px] py-4 border-b border-gray-200">
-      <Link to="/" className="text-xl font-bold">hh.</Link>
-      <div className="flex gap-3">
-        <Link to="/login" className="px-4 py-2 border border-gray-400 rounded-full text-sm hover:bg-gray-50 transition">Log in</Link>
-        <Link to="/signup" className="px-4 py-2 bg-black text-white rounded-full text-sm hover:bg-gray-800 transition">Sign up</Link>
+    <nav className="flex items-center justify-between px-8 py-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-sm border border-white/60 mx-6 mt-4 sticky top-4 z-50">
+      <Link to="/" className="text-xl font-bold text-[#5A3E99]">TinyLearn</Link>
+      <div className="flex items-center gap-2">
+        <Link
+          to="/login"
+          className="px-5 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition"
+        >
+          Log in
+        </Link>
+        <Link
+          to="/signup"
+          className="px-5 py-2 bg-[#7C5CBF] text-white rounded-xl text-sm hover:bg-[#5A3E99] transition"
+        >
+          Sign up
+        </Link>
       </div>
     </nav>
   );
@@ -15,17 +25,35 @@ export function NavBar() {
 
 export function HeroSection() {
   return (
-    <section className="flex items-center justify-center gap-8 p-12 bg-[#f5f5f0] rounded-3xl">
-      <div className="text-right">
-        <h2 className="text-4xl font-bold">Stay Informed, Stay Inspired</h2>
-        <p className="text-gray-500 mt-4">Discover a World of Knowledge at Your Fingertips.</p>
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#7C5CBF] to-[#4A2E8A] rounded-3xl p-12 flex items-center justify-between text-white min-h-[220px]">
+      {/* Decorative blobs */}
+      <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+      <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-[#FF7043]/20 rounded-full translate-y-1/2 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+
+      <div className="relative z-10">
+        <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-medium mb-4 backdrop-blur-sm">
+          ✨ Knowledge Hub
+        </span>
+        <h2 className="text-5xl font-bold leading-tight max-w-md">
+          Stay Informed,<br />Stay Inspired
+        </h2>
+        <p className="text-white/70 mt-4 max-w-xs text-sm">
+          Discover a world of knowledge at your fingertips.
+        </p>
       </div>
-      <img src="https://placehold.co/200x250" alt="author" className="rounded-2xl" />
-      <div>
-        <p className="text-sm text-gray-400">Author</p>
-        <h3 className="text-xl font-bold">Thompson P.</h3>
-        <p className="text-sm text-gray-500 mt-2">A pet enthusiast and freelance writer.</p>
-        <p className="text-sm text-gray-500 mt-2">Volunteers at local animal shelter.</p>
+
+      <div className="relative z-10 flex items-center gap-5 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+        <img
+          src="https://placehold.co/72x72/9B72E0/FFFFFF?text=TP"
+          alt="author"
+          className="rounded-xl w-18 h-18 object-cover"
+        />
+        <div>
+          <p className="text-white/60 text-xs uppercase tracking-widest font-medium">Author</p>
+          <h3 className="text-lg font-bold mt-1">Thompson P.</h3>
+          <p className="text-white/70 text-sm mt-1">Writer & Knowledge Curator</p>
+        </div>
       </div>
     </section>
   );
@@ -33,16 +61,24 @@ export function HeroSection() {
 
 export function Footer() {
   return (
-    <footer className="flex items-center justify-between px-[120px] py-4 bg-[#f5f5f0] rounded-3xl">
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-500">Get in touch</span>
+    <footer className="flex items-center justify-between px-8 py-5 bg-white rounded-2xl shadow-sm">
+      <div className="flex items-center gap-4">
+        <span className="text-sm font-medium text-gray-600">Get in touch</span>
         <div className="flex gap-2">
-          <button className="p-2 bg-gray-800 text-white rounded-full"><Linkedin size={14} /></button>
-          <button className="p-2 bg-gray-800 text-white rounded-full"><Github size={14} /></button>
-          <button className="p-2 bg-gray-800 text-white rounded-full"><Chrome size={14} /></button>
+          <button className="p-2 bg-[#7C5CBF] text-white rounded-xl hover:bg-[#5A3E99] transition">
+            <Linkedin size={14} />
+          </button>
+          <button className="p-2 bg-[#7C5CBF] text-white rounded-xl hover:bg-[#5A3E99] transition">
+            <Github size={14} />
+          </button>
+          <button className="p-2 bg-[#7C5CBF] text-white rounded-xl hover:bg-[#5A3E99] transition">
+            <Chrome size={14} />
+          </button>
         </div>
       </div>
-      <a href="#" className="text-sm underline">Home page</a>
+      <Link to="/" className="text-sm text-[#7C5CBF] font-medium hover:underline">
+        Home page
+      </Link>
     </footer>
   );
 }
