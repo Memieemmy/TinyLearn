@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCG HOME — Smart Onboarding</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #8B1A1A;
+      --red-light: #a82222;
+      --red-bg: #fdf3f3;
+      --gray-50: #f8f8f8;
+      --gray-100: #f0f0f0;
+      --gray-200: #e5e5e5;
+      --gray-400: #9ca3af;
+      --gray-600: #6b7280;
+      --gray-800: #1f2937;
+      --green: #22c55e;
+      --radius-card: 8px;
+      --radius-chip: 20px;
+      --sidebar-w: 200px;
+      --chat-w: 240px;
+      --topbar-h: 56px;
+      --progbar-h: 4px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: var(--gray-800);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ─── TOP BAR ─────────────────────────────────────────── */
+    #topbar {
+      height: var(--topbar-h);
+      background: #fff;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    #logo {
+      width: 36px;
+      height: 36px;
+      background: var(--red);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    #app-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gray-800);
+      flex: 1;
+      letter-spacing: 0.01em;
+    }
+
+    #user-info {
+      font-size: 13px;
+      color: var(--gray-600);
+      white-space: nowrap;
+    }
+
+    /* ─── PROGRESS BAR ────────────────────────────────────── */
+    #progress-wrap {
+      height: var(--progbar-h);
+      background: var(--gray-200);
+      flex-shrink: 0;
+    }
+
+    #progress-fill {
+      height: 100%;
+      background: var(--red);
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+
+    /* ─── MAIN LAYOUT ─────────────────────────────────────── */
+    #main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ─── LEFT SIDEBAR ────────────────────────────────────── */
+    #sidebar {
+      width: var(--sidebar-w);
+      background: #fff;
+      border-right: 1px solid var(--gray-200);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+
+    #sidebar-header {
+      padding: 14px 14px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .module-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--gray-200);
+      transition: background 0.15s;
+      position: relative;
+    }
+
+    .module-item:hover:not(.locked) { background: var(--gray-50); }
+
+    .module-item.active {
+      background: var(--red-bg);
+      border-left: 3px solid var(--red);
+    }
+
+    .module-item.active .module-num { color: var(--red); }
+    .module-item.active .module-name { color: var(--red); font-weight: 600; }
+
+    .module-item.locked { cursor: not-allowed; opacity: 0.5; }
+
+    .module-icon {
+      font-size: 14px;
+      line-height: 1;
+      margin-top: 1px;
+      flex-shrink: 0;
+      width: 18px;
+      text-align: center;
+    }
+
+    .module-text { flex: 1; min-width: 0; }
+
+    .module-num {
+      font-size: 10px;
+      color: var(--gray-400);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .module-name {
+      font-size: 12.5px;
+      color: var(--gray-800);
+      line-height: 1.4;
+      margin-top: 1px;
+      word-break: keep-all;
+    }
+
+    .module-status-badge {
+      font-size: 9px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .badge-active   { background: #fce8e8; color: var(--red); }
+    .badge-done     { background: #dcfce7; color: #166534; }
+    .badge-locked   { background: var(--gray-100); color: var(--gray-400); }
+    .badge-pending  { background: #fffbeb; color: #92400e; }
+
+    /* ─── CENTER ──────────────────────────────────────────── */
+    #center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 16px;
+    }
+
+    #video-wrapper {
+      background: #000;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    #video-thumbnail {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      background: linear-gradient(135deg, #1a0505 0%, #3d0a0a 100%);
+    }
+
+    #thumb-label {
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+      letter-spacing: 0.05em;
+    }
+
+    #play-btn {
+      width: 72px;
+      height: 72px;
+      background: rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,255,255,0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    #video-wrapper:hover #play-btn {
+      background: rgba(255,255,255,0.25);
+      transform: scale(1.05);
+    }
+
+    #play-btn::after {
+      content: '';
+      width: 0;
+      height: 0;
+      border-top: 14px solid transparent;
+      border-bottom: 14px solid transparent;
+      border-left: 24px solid #fff;
+      margin-left: 4px;
+    }
+
+    #thumb-module-name {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    #video-iframe {
+      display: none;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    #module-info-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-card);
+      padding: 18px 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    #module-info-text { flex: 1; }
+
+    #module-info-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 6px;
+    }
+
+    #module-info-desc {
+      font-size: 13px;
+      color: var(--gray-600);
+      line-height: 1.7;
+    }
+
+    #complete-btn {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-card);
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, opacity 0.15s;
+      flex-shrink: 0;
+    }
+
+    #complete-btn:hover:not(:disabled) { background: var(--red-light); }
+
+    #complete-btn:disabled {
+      background: var(--gray-400);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    #complete-btn.done {
+      background: #166534;
+      cursor: default;
+    }
+
+    /* Module detail cards */
+    #module-details {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .detail-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-card);
+      padding: 14px 16px;
+    }
+
+    .detail-card-icon {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+
+    .detail-card-label {
+      font-size: 10px;
+      color: var(--gray-400);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .detail-card-value {
+      font-size: 13px;
+      color: var(--gray-800);
+      font-weight: 500;
+    }
+
+    /* ─── RIGHT CHAT PANEL ────────────────────────────────── */
+    #chat-panel {
+      width: var(--chat-w);
+      background: #fff;
+      border-left: 1px solid var(--gray-200);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    #chat-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    #online-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px #dcfce7;
+    }
+
+    #chat-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    #chat-subtitle {
+      font-size: 10px;
+      color: var(--gray-400);
+      margin-left: auto;
+    }
+
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scroll-behavior: smooth;
+    }
+
+    .msg {
+      max-width: 90%;
+      font-size: 12px;
+      line-height: 1.6;
+      border-radius: 12px;
+      padding: 8px 11px;
+      word-break: break-word;
+    }
+
+    .msg.ai {
+      background: var(--gray-100);
+      color: var(--gray-800);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg.user {
+      background: var(--red);
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-time {
+      font-size: 10px;
+      color: var(--gray-400);
+      margin-top: 2px;
+    }
+
+    .msg-time.right { text-align: right; }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 11px;
+      background: var(--gray-100);
+      border-radius: 12px;
+      border-bottom-left-radius: 4px;
+      align-self: flex-start;
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--gray-400);
+      border-radius: 50%;
+      animation: typingBounce 1.2s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-4px); }
+    }
+
+    /* Chips */
+    #chips-wrap {
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-top: 1px solid var(--gray-200);
+      flex-shrink: 0;
+    }
+
+    #chips-label {
+      font-size: 10px;
+      color: var(--gray-400);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    #chips-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .chip {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-chip);
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--gray-800);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .chip:hover {
+      background: var(--red-bg);
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* Input */
+    #chat-input-area {
+      padding: 10px 12px;
+      border-top: 1px solid var(--gray-200);
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    #chat-textarea {
+      flex: 1;
+      border: 1px solid var(--gray-200);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      color: var(--gray-800);
+      min-height: 36px;
+      max-height: 80px;
+      line-height: 1.5;
+    }
+
+    #chat-textarea:focus { border-color: var(--red); }
+
+    #send-btn {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    #send-btn:hover { background: var(--red-light); }
+
+    #send-btn svg { width: 14px; height: 14px; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+
+    /* Utility */
+    .hidden { display: none !important; }
+
+    /* Notification toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--gray-800);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── TOP BAR ─────────────────────────────────────────── -->
+<div id="topbar">
+  <div id="logo">S</div>
+  <span id="app-title">SCG HOME &mdash; Smart Onboarding</span>
+  <span id="user-info">สวัสดีคุณ สมใจ &nbsp;·&nbsp; วันที่ 1</span>
+</div>
+<div id="progress-wrap">
+  <div id="progress-fill"></div>
+</div>
+
+<!-- ─── MAIN ────────────────────────────────────────────── -->
+<div id="main">
+
+  <!-- LEFT SIDEBAR -->
+  <nav id="sidebar">
+    <div id="sidebar-header">บทเรียน</div>
+    <!-- Modules rendered by JS -->
+  </nav>
+
+  <!-- CENTER -->
+  <section id="center">
+    <div id="video-wrapper">
+      <div id="video-thumbnail">
+        <div id="thumb-label">คลิกเพื่อเริ่มบทเรียน</div>
+        <div id="play-btn"></div>
+        <div id="thumb-module-name"></div>
+      </div>
+      <iframe id="video-iframe" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    </div>
+
+    <div id="module-info-card">
+      <div id="module-info-text">
+        <div id="module-info-title"></div>
+        <div id="module-info-desc"></div>
+      </div>
+      <button id="complete-btn">ทำบทเรียนเสร็จแล้ว ✓</button>
+    </div>
+
+    <div id="module-details"></div>
+  </section>
+
+  <!-- RIGHT CHAT -->
+  <aside id="chat-panel">
+    <div id="chat-header">
+      <div id="online-dot"></div>
+      <span id="chat-title">HR AI Assistant</span>
+      <span id="chat-subtitle">ออนไลน์</span>
+    </div>
+
+    <div id="chat-messages"></div>
+
+    <div id="chips-wrap">
+      <div id="chips-label">คำถามที่พบบ่อย</div>
+      <div id="chips-list">
+        <span class="chip" data-q="ลาพักร้อนได้กี่วัน?">ลาพักร้อนได้กี่วัน?</span>
+        <span class="chip" data-q="ประกันสุขภาพ?">ประกันสุขภาพ?</span>
+        <span class="chip" data-q="เวลาทำงาน?">เวลาทำงาน?</span>
+        <span class="chip" data-q="OT คิดยังไง?">OT คิดยังไง?</span>
+      </div>
+    </div>
+
+    <div id="chat-input-area">
+      <textarea id="chat-textarea" placeholder="พิมพ์คำถาม..." rows="1"></textarea>
+      <button id="send-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </aside>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  /* ─── DATA ─────────────────────────────────────────────── */
+  const MODULES = [
+    {
+      id: 1,
+      name: 'วัฒนธรรมองค์กร',
+      desc: 'เรียนรู้ค่านิยม วิสัยทัศน์ และวัฒนธรรมการทำงานของ SCG HOME ที่ส่งเสริมความร่วมมือ ความซื่อสัตย์ และนวัตกรรมอย่างยั่งยืน',
+      videoId: 'dQw4w9WgXcQ',
+      duration: '12 นาที',
+      category: 'องค์กร',
+      level: 'เบื้องต้น',
+      status: 'active',  // active | pending | locked | done
+    },
+    {
+      id: 2,
+      name: 'สวัสดิการ & HR',
+      desc: 'ทำความเข้าใจสิทธิประโยชน์ด้านสวัสดิการ การลา ประกันสุขภาพ กองทุนสำรองเลี้ยงชีพ และขั้นตอนการติดต่อฝ่าย HR ของ SCG HOME',
+      videoId: '9bZkp7q19f0',
+      duration: '8 นาที',
+      category: 'HR',
+      level: 'เบื้องต้น',
+      status: 'pending',
+    },
+    {
+      id: 3,
+      name: 'ระบบ IT',
+      desc: 'แนะนำเครื่องมือและระบบดิจิทัลที่ใช้ภายในองค์กร เช่น อีเมล, Microsoft Teams, ระบบ ERP, VPN และนโยบายความปลอดภัยไซเบอร์',
+      videoId: 'ScMzIvxBSi4',
+      duration: '15 นาที',
+      category: 'IT',
+      level: 'ปานกลาง',
+      status: 'locked',
+    },
+    {
+      id: 4,
+      name: 'บทบาทงาน',
+      desc: 'ทบทวนขอบเขตหน้าที่ความรับผิดชอบ เป้าหมาย KPI และกระบวนการทำงานในแผนกของคุณ พร้อมแนะนำทีมงานและผู้บังคับบัญชา',
+      videoId: 'L_jWHffIx5E',
+      duration: '10 นาที',
+      category: 'งาน',
+      level: 'ปานกลาง',
+      status: 'locked',
+    },
+  ];
+
+  const QA_MAP = {
+    'ลาพักร้อนได้กี่วัน?':
+      'พนักงานมีสิทธิ์ลาพักร้อนปีละ 10 วันทำการในปีแรก และเพิ่มขึ้นตามอายุงาน สูงสุด 15 วัน/ปี ดูยอดคงเหลือได้ใน HR Self-Service Portal ค่ะ',
+    'ประกันสุขภาพ?':
+      'ครอบคลุม OPD วงเงิน 30,000 บาท/ปี, IPD 200,000 บาท/ครั้ง และทันตกรรม 3,000 บาท/ปี ค่ะ',
+    'เวลาทำงาน?':
+      'จันทร์–ศุกร์ เวลา 08.00–17.00 น. พักเที่ยง 1 ชั่วโมง ค่ะ',
+    'OT คิดยังไง?':
+      'วันธรรมดา 1.5 เท่า, วันหยุด 2 เท่า, OT วันหยุด 3 เท่า ต้องได้รับอนุมัติจาก Manager ก่อนทุกครั้งค่ะ',
+  };
+
+  const FALLBACK =
+    'ขอบคุณสำหรับคำถามค่ะ HR จะติดต่อกลับภายใน 24 ชั่วโมงค่ะ';
+
+  /* ─── STATE ─────────────────────────────────────────────── */
+  let activeModuleId = 1;
+  let videoPlaying = false;
+
+  /* ─── UTILS ─────────────────────────────────────────────── */
+  function getModule(id) { return MODULES.find(m => m.id === id); }
+
+  function now() {
+    const d = new Date();
+    return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+  }
+
+  function completedCount() {
+    return MODULES.filter(m => m.status === 'done').length;
+  }
+
+  function showToast(msg, duration = 2400) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  /* ─── SIDEBAR ────────────────────────────────────────────── */
+  function renderSidebar() {
+    const nav = document.getElementById('sidebar');
+    nav.innerHTML = '<div id="sidebar-header">บทเรียน</div>';
+
+    MODULES.forEach(m => {
+      const isActive = m.id === activeModuleId;
+      const isLocked = m.status === 'locked';
+      const isDone   = m.status === 'done';
+      const isPending = m.status === 'pending';
+
+      const icons = {
+        active: '▶',
+        pending: '○',
+        locked: '🔒',
+        done: '✓',
+      };
+      const icon = isActive ? '▶' : icons[m.status] ?? '○';
+
+      const badgeClass = {
+        active: 'badge-active',
+        pending: 'badge-pending',
+        locked: 'badge-locked',
+        done: 'badge-done',
+      }[m.status] ?? 'badge-pending';
+
+      const badgeText = {
+        active: 'กำลังเรียน',
+        pending: 'ยังไม่เริ่ม',
+        locked: 'ล็อก',
+        done: 'เสร็จแล้ว',
+      }[m.status] ?? '';
+
+      const el = document.createElement('div');
+      el.className = `module-item${isActive ? ' active' : ''}${isLocked ? ' locked' : ''}`;
+      el.dataset.id = m.id;
+      el.innerHTML = `
+        <div class="module-icon">${icon}</div>
+        <div class="module-text">
+          <div class="module-num">MODULE ${m.id}</div>
+          <div class="module-name">${m.name}</div>
+          <span class="module-status-badge ${badgeClass}">${badgeText}</span>
+        </div>
+      `;
+
+      if (!isLocked) {
+        el.addEventListener('click', () => switchModule(m.id));
+      }
+
+      nav.appendChild(el);
+    });
+  }
+
+  /* ─── PROGRESS BAR ───────────────────────────────────────── */
+  function updateProgress() {
+    const pct = (completedCount() / MODULES.length) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  /* ─── CENTER ─────────────────────────────────────────────── */
+  function renderCenter() {
+    const m = getModule(activeModuleId);
+
+    // Thumbnail
+    document.getElementById('thumb-module-name').textContent = m.name;
+
+    // Reset video state
+    videoPlaying = false;
+    const thumb  = document.getElementById('video-thumbnail');
+    const iframe = document.getElementById('video-iframe');
+    thumb.style.display  = 'flex';
+    iframe.style.display = 'none';
+    iframe.src = '';
+
+    // Module info
+    document.getElementById('module-info-title').textContent = m.name;
+    document.getElementById('module-info-desc').textContent  = m.desc;
+
+    // Complete button
+    const btn = document.getElementById('complete-btn');
+    if (m.status === 'done') {
+      btn.textContent = '✓ เสร็จสมบูรณ์';
+      btn.classList.add('done');
+      btn.disabled = true;
+    } else {
+      btn.textContent = 'ทำบทเรียนเสร็จแล้ว ✓';
+      btn.classList.remove('done');
+      btn.disabled = false;
+    }
+
+    // Detail cards
+    const det = document.getElementById('module-details');
+    det.innerHTML = `
+      <div class="detail-card">
+        <div class="detail-card-icon">⏱</div>
+        <div class="detail-card-label">ระยะเวลา</div>
+        <div class="detail-card-value">${m.duration}</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-icon">📂</div>
+        <div class="detail-card-label">หมวดหมู่</div>
+        <div class="detail-card-value">${m.category}</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-icon">📊</div>
+        <div class="detail-card-label">ระดับ</div>
+        <div class="detail-card-value">${m.level}</div>
+      </div>
+    `;
+  }
+
+  /* ─── SWITCH MODULE ──────────────────────────────────────── */
+  function switchModule(id) {
+    if (id === activeModuleId) return;
+    const m = getModule(id);
+    if (m.status === 'locked') return;
+
+    // Update active
+    const prev = getModule(activeModuleId);
+    if (prev.status === 'active') prev.status = 'pending';
+
+    activeModuleId = id;
+    if (m.status === 'pending') m.status = 'active';
+
+    renderSidebar();
+    renderCenter();
+  }
+
+  /* ─── PLAY VIDEO ─────────────────────────────────────────── */
+  document.getElementById('video-wrapper').addEventListener('click', () => {
+    if (videoPlaying) return;
+    const m = getModule(activeModuleId);
+    const thumb  = document.getElementById('video-thumbnail');
+    const iframe = document.getElementById('video-iframe');
+
+    iframe.src = `https://www.youtube.com/embed/${m.videoId}?autoplay=1&rel=0`;
+    thumb.style.display  = 'none';
+    iframe.style.display = 'block';
+    videoPlaying = true;
+  });
+
+  /* ─── COMPLETE MODULE ────────────────────────────────────── */
+  document.getElementById('complete-btn').addEventListener('click', () => {
+    const m = getModule(activeModuleId);
+    if (m.status === 'done') return;
+
+    m.status = 'done';
+
+    // Unlock next if locked
+    const nextIdx = MODULES.findIndex(x => x.id === activeModuleId) + 1;
+    if (nextIdx < MODULES.length && MODULES[nextIdx].status === 'locked') {
+      // Check if all prerequisites before it are done
+      const allPrevDone = MODULES.slice(0, nextIdx).every(x => x.status === 'done');
+      if (allPrevDone) MODULES[nextIdx].status = 'pending';
+    }
+
+    // Check if all unlockable are done (1+2 → unlock 3; 3 done → unlock 4)
+    updateUnlocks();
+    updateProgress();
+
+    // Chat congratulation
+    const congrats = [
+      `ยินดีด้วยคุณสมใจ! 🎉 คุณทำบทเรียน "${m.name}" เสร็จแล้ว เยี่ยมมากค่ะ!`,
+      `เยี่ยมมาก! ✨ คุณผ่านบทเรียน "${m.name}" แล้ว ก้าวต่อไปได้เลยค่ะ`,
+    ];
+    addAIMessage(congrats[Math.floor(Math.random() * congrats.length)]);
+
+    showToast(`✓ เสร็จสิ้น: ${m.name}`);
+
+    // Auto-navigate to next unlocked module
+    const nextModule = MODULES.find(x => x.status === 'pending' || (x.id > activeModuleId && x.status !== 'done' && x.status !== 'locked'));
+    if (nextModule) {
+      setTimeout(() => switchModule(nextModule.id), 800);
+    } else {
+      renderSidebar();
+      renderCenter();
+    }
+  });
+
+  function updateUnlocks() {
+    // Module 3 unlocks when 1+2 done; Module 4 unlocks when 3 done
+    const done1 = getModule(1).status === 'done';
+    const done2 = getModule(2).status === 'done';
+    const done3 = getModule(3).status === 'done';
+
+    if (done1 && done2 && getModule(3).status === 'locked') {
+      getModule(3).status = 'pending';
+    }
+    if (done3 && getModule(4).status === 'locked') {
+      getModule(4).status = 'pending';
+    }
+  }
+
+  /* ─── CHAT ───────────────────────────────────────────────── */
+  function addMessage(text, role) {
+    const wrap = document.getElementById('chat-messages');
+
+    const msgEl = document.createElement('div');
+    msgEl.className = `msg ${role}`;
+    msgEl.textContent = text;
+    wrap.appendChild(msgEl);
+
+    const timeEl = document.createElement('div');
+    timeEl.className = `msg-time${role === 'user' ? ' right' : ''}`;
+    timeEl.textContent = now();
+    wrap.appendChild(timeEl);
+
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function addAIMessage(text) {
+    addMessage(text, 'ai');
+  }
+
+  function addUserMessage(text) {
+    addMessage(text, 'user');
+  }
+
+  function showTyping() {
+    const wrap = document.getElementById('chat-messages');
+    const el = document.createElement('div');
+    el.className = 'typing-indicator';
+    el.id = 'typing';
+    el.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    wrap.appendChild(el);
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function hideTyping() {
+    const el = document.getElementById('typing');
+    if (el) el.remove();
+  }
+
+  function handleQuestion(q) {
+    addUserMessage(q);
+    showTyping();
+    setTimeout(() => {
+      hideTyping();
+      const answer = QA_MAP[q] || FALLBACK;
+      addAIMessage(answer);
+    }, 600);
+  }
+
+  // Chips
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => handleQuestion(chip.dataset.q));
+  });
+
+  // Send button / Enter key
+  function sendFromInput() {
+    const ta = document.getElementById('chat-textarea');
+    const val = ta.value.trim();
+    if (!val) return;
+    ta.value = '';
+    ta.style.height = 'auto';
+    handleQuestion(val);
+  }
+
+  document.getElementById('send-btn').addEventListener('click', sendFromInput);
+  document.getElementById('chat-textarea').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendFromInput();
+    }
+  });
+
+  // Auto resize textarea
+  document.getElementById('chat-textarea').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+  });
+
+  /* ─── INIT ───────────────────────────────────────────────── */
+  function init() {
+    MODULES[0].status = 'active';
+    renderSidebar();
+    renderCenter();
+    updateProgress();
+
+    // Initial AI greeting (delayed slightly for feel)
+    setTimeout(() => {
+      addAIMessage('สวัสดีคุณสมใจ! ยินดีต้อนรับสู่ SCG HOME 🏠 มีคำถามอะไรเกี่ยวกับการทำงานหรือสวัสดิการ ถามได้เลยนะคะ');
+    }, 400);
+  }
+
+  init();
+</script>
+</body>
+</html>
