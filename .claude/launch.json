@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "scg-onboarding",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "3456"],
+      "port": 3456
+    },
+    {
+      "name": "tinylearn-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "Desktop/TinyLearn"],
+      "port": 5173
+    }
+  ]
+}
